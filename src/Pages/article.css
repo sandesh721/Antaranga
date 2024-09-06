@@ -1,0 +1,23 @@
+.container_article{
+    padding: 1em 5em;
+    /* height:100vh; */
+    background: linear-gradient(to bottom, #fff 0%, #8be3f3 100%);
+    background-size: cover;
+    background-repeat: repeat;
+}
+.container_article_content{
+    margin-top: 20px;
+}
+h2{
+    text-align: center;
+}
+.content {
+    display: flex;
+    flex-wrap: wrap; 
+    justify-content: space-between; 
+}
+
+.eachCard {
+    margin: 10px; 
+    max-width: 400px; 
+}

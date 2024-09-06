@@ -1,0 +1,11 @@
+.container_quote{
+    animation: fadein 750ms linear forwards;
+    padding: 1em 5em;
+    height:100vh;
+    background: linear-gradient(to bottom, #fff 0%, #8be3f3 100%);
+}
+
+@keyframes fadein {
+    from {height: 10px}
+    to {height: 100vh}
+}

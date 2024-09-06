@@ -1,0 +1,18 @@
+.container_navbar{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.navbarList{
+    display: flex;
+    gap: 2em;
+    justify-content: right;
+    list-style: none;
+    font-weight: 600;
+    font-size: large;
+}
+
+.navbarList > li > a{
+    text-decoration: none;
+}
