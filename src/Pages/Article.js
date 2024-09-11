@@ -22,8 +22,8 @@ function Article({ bg }){
     useEffect(() => {
         const fetchArticles = async () => {
             const { data, error } = await supabase
-                .from('articles') // Replace with your table name
-                .select('*'); // Adjust columns as needed
+                .from('articles') 
+                .select('*'); 
 
                 console.log(data);
             if (error) {
@@ -57,7 +57,7 @@ function Article({ bg }){
                                 component="img"
                                 alt={article.heading}
                                 height="140"
-                                image={article.img_url} // Make sure imageUrl is the correct field in your Supabase table
+                                image={article.img_url} 
                             />
                             <CardContent>
                                 <Typography gutterBottom variant="h5" component="div">
