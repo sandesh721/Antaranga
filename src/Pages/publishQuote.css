@@ -1,7 +1,7 @@
 @import "../components/color.css";
-.publish_Article{
+.publish_quote{
     background: linear-gradient(to bottom, #fff 0%, #8be3f3 100%);
-    width: 100vw;
+    height: 100vh;
     background-size: cover;
     background-repeat: repeat;
     color: var(--text-color);
@@ -10,7 +10,7 @@
 h3{
     font-size: 2em;
 }
-.publish_Article_container{
+.publish_quote_container{
     
     align-items: center;
     justify-content: center;

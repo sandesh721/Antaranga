@@ -4,6 +4,7 @@ import Home from './Pages/Home';
 import Article from "./Pages/Article";
 import Quote from "./Pages/Quote";
 import PublishArticle from "./Pages/publisharticle";
+import PublishQuote from "./Pages/publishQuote";
 function App() {
   return(
     <Router>
@@ -13,6 +14,7 @@ function App() {
             <Route path="/article" element={<Article bg="yellow" />} />
             <Route path="/quote" element={<Quote bg="bisque" />} />
             <Route path="/publishArticle" element={<PublishArticle />} />
+            <Route path="/publishQuote" element={<PublishQuote />} />
             <Route path="aboutUs" />
             <Route path="contact" />
             <Route path="authors" />

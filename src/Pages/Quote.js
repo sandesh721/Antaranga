@@ -1,12 +1,62 @@
-import React from "react";
-import "./quote.css"
+import React, { useEffect, useState } from "react";
+import "./quote.css";
 import NavBar from "../components/navBar";
-function Quote({ bg }){
-    return(
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import ArrowCircleDownIcon from '@mui/icons-material/ArrowCircleDown';
+import Button from '@mui/material/Button';
+import AddIcon from '@mui/icons-material/Add';
+import Stack from '@mui/material/Stack';
+import { useNavigate } from "react-router-dom";
+import supabase from "../supabase/supabase";
+
+function Quote({ bg }) {
+    const navigate = useNavigate();
+    const [quotes, setQuotes] = useState([]);
+
+    useEffect(() => {
+        const fetchQuotes = async () => {
+            const { data, error } = await supabase
+                .from('quotes')
+                .select('*');
+            
+            if (error) {
+                console.log('Error fetching quotes:', error);
+            } else {
+                setQuotes(data);
+            }
+        };
+
+        fetchQuotes();
+    }, []); // Empty dependency array to run only once
+
+    const publishQuote = () => {
+        navigate("/publishQuote");
+    };
+
+    return (
         <div className="container_quote" style={{ backgroundColor: bg }}>
             <NavBar />
-            <h1>Quote</h1>
+            <h1>Quotes</h1>
+            <Stack direction="row" spacing={2}>
+                <Button variant="outlined" startIcon={<AddIcon />} onClick={publishQuote}>
+                    Publish
+                </Button>
+            </Stack>
+            <div className="imageContainer">
+                <div className="content">
+                    {quotes.map((quote) => (
+                        <div key={quote.id} className="singleImg">
+                            <img src={quote.quote_url} alt={quote.heading} className="image"/>
+                            <div>
+                                <FavoriteBorderIcon className="icon like"/>
+                                <ArrowCircleDownIcon className="icon download"/>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
+
 export default Quote;
