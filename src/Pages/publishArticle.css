@@ -1,0 +1,40 @@
+@import "../components/color.css";
+.publish_Article{
+    background: linear-gradient(to bottom, #fff 0%, #8be3f3 100%);
+    width: 100vw;
+    background-size: cover;
+    background-repeat: repeat;
+    color: var(--text-color);
+
+}
+h3{
+    font-size: 2em;
+}
+.publish_Article_container{
+    
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    margin-top: 20px;
+
+}
+.navbar{
+    margin: 0 2em 0 1em;
+}
+.upload{
+    display: flex;
+    justify-content: center;
+}
+.uploadImage{
+    width: 550px;
+    height: 250px;
+}
+.heading{
+    text-align: center;
+}
+.publichButton{
+    display: flex;
+    justify-content: center;
+    padding: 20px;    
+    
+}

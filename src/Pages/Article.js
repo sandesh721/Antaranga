@@ -1,0 +1,185 @@
+import React, { useEffect, useState } from "react";
+import "./article.css";
+import NavBar from "../components/navBar";
+import Card from '@mui/material/Card';
+import CardActions from '@mui/material/CardActions';
+import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
+import Button from '@mui/material/Button';
+import Typography from '@mui/material/Typography';
+import AddIcon from '@mui/icons-material/Add';
+import Stack from '@mui/material/Stack';
+import { useNavigate } from "react-router-dom";
+import supabase from "../supabase/supabase";
+import CircularProgress from '@mui/material/CircularProgress'; 
+import InsertChartIcon from '@mui/icons-material/InsertChart';
+import Modal from '@mui/material/Modal'; 
+import { Bar } from 'react-chartjs-2';
+import Backdrop from '@mui/material/Backdrop';
+import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+
+// Register Chart.js components
+Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+function Article({ bg }) {
+    const navigate = useNavigate();
+    const [articles, setArticles] = useState([]);
+    const [loading, setLoading] = useState(true); 
+    const [modalOpen, setModalOpen] = useState(false);
+    const [sentimentData, setSentimentData] = useState({ positive: 0, neutral: 0, negative: 0 });
+    const [open, setOpen] = React.useState(false);
+
+    const fetchArticles = async () => {
+        const { data, error } = await supabase
+            .from('articles')
+            .select('*');
+
+        if (error) {
+            console.error('Error fetching articles:', error);
+        } else {
+            setArticles(data);
+        }
+        setLoading(false); 
+    };
+
+    useEffect(() => {
+        fetchArticles();
+    }, []);
+
+    const publishArticle = () => {
+        navigate("/publishArticle");
+    };
+
+    const readMore = (article) => {
+        navigate(`/article/${article.id}`, { state: article }); 
+    }
+
+    const analyze = async (article) => {
+        try {
+            const { data: comments, error } = await supabase
+                .from('commentArticle')
+                .select('*')
+                .eq('article_id', article.id);
+
+            if (error) {
+                console.error('Error fetching comments:', error);
+                return;
+            }
+
+            if (comments.length === 0) {
+                console.log('No comments to analyze.');
+                setSentimentData({ positive: 0, neutral: 0, negative: 0 });
+                setModalOpen(true);
+                return;
+            }
+
+            const response = await fetch('http://localhost:5000/analyze', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ comments }),
+            });
+
+            const result = await response.json();
+            setSentimentData(result); 
+            setOpen(false);
+            setModalOpen(true);
+
+        } catch (error) {
+            console.error('Error analyzing comments:', error);
+        }
+    };
+
+    const handleClose = () => {
+        setModalOpen(false);
+    };
+
+    const showBackDrop = () => {
+        setOpen(true);
+    }
+    const closeBackDrop = () => {
+        setOpen(false);
+    }
+
+    return (
+        <>
+            {loading ? ( 
+                <div className="loading_spinner"> 
+                    <CircularProgress />
+                </div>
+            ) : (
+                <div className="container_article" style={{ backgroundColor: bg }}>
+                    <NavBar />
+                    <h2>My Articles</h2>
+                    <Stack direction="row" spacing={2}>
+                        <Button variant="outlined" startIcon={<AddIcon />} onClick={publishArticle}>
+                            Publish
+                        </Button>
+                    </Stack>
+                    <div className="container_article_content">
+                        <div className="content">
+                            {articles.map((article) => (
+                                <Card sx={{ maxWidth: 345 }} key={article.id} className="eachCard">
+                                    <CardMedia
+                                        component="img"
+                                        alt={article.heading}
+                                        height="140"
+                                        image={article.img_url}
+                                    />
+                                    <CardContent>
+                                        <Typography gutterBottom variant="h5" component="div">
+                                            {article.heading}
+                                        </Typography>
+                                        <div className="truncate-text">
+                                            {article.article}
+                                        </div>
+                                    </CardContent>
+                                    <CardActions>
+                                        <Button size="small" onClick={() => readMore(article)}>Read More</Button>
+                                        <Button size="small" onClick={() => {analyze(article); showBackDrop();}}>Analyse Responses
+                                            <InsertChartIcon></InsertChartIcon>
+                                        </Button>
+                                    </CardActions>
+                                </Card>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    
+                    <Backdrop
+                        sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
+                        open={open}
+                        onClick={closeBackDrop}
+                    >
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
+                
+                    <Modal open={modalOpen} onClose={handleClose}>
+                        <div className="modal-chart">
+                            <h3>Sentiment Analysis</h3>
+                            <Bar
+                                data={{
+                                    labels: ['Positive','Negative'],
+                                    datasets: [
+                                        {
+                                            label: 'Sentiment Count',
+                                            data: [sentimentData.positive, sentimentData.negative],
+                                            backgroundColor: ['#4caf50', '#f44336'],
+                                        },
+                                    ],
+                                }}
+                                width={300}  
+                                height={200} 
+                                
+                            />
+                            <Button onClick={() => {handleClose(); closeBackDrop();}}>Close</Button>
+                        </div>
+                    </Modal>
+                </div>
+            )}
+        </>
+    );
+}
+
+export default Article;
