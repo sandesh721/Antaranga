@@ -1,0 +1,38 @@
+.container{
+    padding: 1em 5em;
+    background: linear-gradient(to bottom,#8be3f3 0%, #fff 100%);
+    background-size: cover;
+    background-repeat: repeat;
+    
+}
+
+
+
+
+.content h1,
+.content p,
+.content .image {
+    /* margin-bottom: 20px;  */
+    display: block;
+}
+
+.image {
+    display: block;
+    margin: 0 auto; 
+}
+.fullArticle{
+    width: 700px;
+  margin: 0 auto; 
+  padding: 20px;
+  
+  
+}
+.textContent {
+    text-align: justify;
+}
+.comment_view{
+    width: 700px;
+  margin: 0 auto; 
+  padding: -20px;
+  border-top: 1px solid rgba(0, 0, 0, 0.5);
+}

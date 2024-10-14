@@ -1,0 +1,98 @@
+@import "../components/color.css";
+
+.container_home{
+    color: var(--text-color);
+}
+
+.container_about{
+    padding: 1em 5em;
+    height:100vh;
+    background-image: url("../components/images/entry_image.png");
+    background-size: cover;
+    color: var(--text-color);
+}
+.subtitle{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 18%;
+    font-weight: 600;
+}
+
+.about > p{
+    padding: 2% 10% 0 10%;
+    align-items: center;
+    text-align: center;
+    font-size: large;
+    line-height: 30px;
+}
+.newsletter{
+    /* margin-top: -1.5em; */
+    height: 100vh;
+    width: 100vw;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(to bottom, #fff 0%, #8be3f3 100%);
+    padding-top: 3%;
+    opacity: 0;
+    transform: translateY(50px); /* Start slightly below its final position */
+    transition: opacity 2s ease-out, transform 1s ease-out;
+}
+.newsletter >h2{
+    font-size: 50px;
+}
+.newsletter >p{
+    font-size: 20px;
+}
+.newsletter.visible {
+    opacity: 1;
+    transform: translateY(0); /* Final position */
+}
+.subscribe{
+    display: flex;
+    align-items:center ;
+    text-align: center;
+    justify-content: center;
+}
+.follow{
+    margin-top: 40px;
+}
+.social_media > img{
+    width: 40px;
+    margin-right:10px;
+}
+.follow{
+    display: flex;
+    justify-content: center;
+    
+}
+/* .follow > div{
+    margin-right: 10%;
+} */
+.bottom_line{
+    display: flex;
+    justify-content: space-between;
+    width: 100vw;
+    margin-top: 5%;
+}
+
+.bottom_line >div{
+    display: flex;
+    float: inline-end;
+    margin-right: 5%;
+    margin-left: 5%;
+}
+.bottom_line >div>span{
+    display: flex;
+
+}
+.resources {
+  text-decoration: none; 
+  color: inherit; 
+}
+.copyright{
+    margin-top: 40px;
+    font-family: 'Times New Roman', serif;
+    
+}
