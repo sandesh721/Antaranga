@@ -65,14 +65,8 @@ function PublishArticle() {
         return;
       }
   
-      console.log("Upload data:", uploadData);
-      console.log("Full Path to the file:", uploadData.path);
-  
-      // Corrected manual URL construction
       const manualPublicURL = `https://uzbcnkeihbforjogyyfn.supabase.co/storage/v1/object/public/articleImages/${uploadData.path}`;
 
-      console.log("Manually generated public URL:", manualPublicURL);
-  
       const { error: insertError } = await supabase
         .from('articles')
         .insert([{ heading, article, img_url: manualPublicURL }]);
@@ -86,7 +80,6 @@ function PublishArticle() {
           setAlert(null);
           navigate('/article'); 
         }, 2000);
-        console.log("Article published successfully!");
       }
     } catch (error) {
       console.error("Unexpected error:", error.message);
@@ -189,8 +182,13 @@ function PublishArticle() {
           >
             Publish
           </Button>
-          {alert && <Alert severity={alert.severity} color={alert.severity}>{alert.message}</Alert>}
         </Stack>
+
+        {alert && (
+          <Alert severity={alert.severity} className="floating-alert">
+            {alert.message}
+          </Alert>
+        )}
       </div>
     </div>
   );

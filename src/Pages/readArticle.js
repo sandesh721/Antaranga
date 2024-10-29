@@ -4,6 +4,8 @@ import NavBar from '../components/navBar';
 import supabase from '../supabase/supabase'; // Assuming you have supabase setup
 import { Card, CardContent, TextField, Button, Avatar, Typography, Divider, CardMedia } from "@mui/material";
 import "../Pages/readArticle.css";
+import { pipeline } from "@huggingface/hub";
+import * as tf from "@tensorflow/tfjs";
 
 function ReadArticle() {
   const location = useLocation();
@@ -14,6 +16,9 @@ function ReadArticle() {
 
   const [newComment, setNewComment] = useState("");
   const [allComments, setAllComments] = useState([]);
+
+  const sentimentAnalysis = pipeline("text-classification", "bhadresh-savani/bert-base-uncased-emotion");
+  const toxicityAnalysis = pipeline("text-classification", "unitary/toxic-bert");
 
   // Fetch comments for the article
   useEffect(() => {
@@ -45,6 +50,17 @@ function ReadArticle() {
   const handleAddComment = async () => {
     if (newComment.trim()) {
       try {
+        const sentiment = await sentimentAnalysis(newComment);
+        const toxicity = await toxicityAnalysis(newComment);
+
+        // Check if the comment is flagged as abusive or negative
+        // const isNegative = sentiment[0].label === "negative";
+        const isToxic = toxicity[0].label === "toxic";
+
+        if (isToxic) {
+          console.error("Comment is flagged as toxic.");
+          return;
+        }
         const { error } = await supabase
           .from('commentArticle')
           .insert([

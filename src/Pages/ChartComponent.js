@@ -53,6 +53,12 @@ const ChartComponent = ({ data }) => {
       }
     };
   }, [data]); // Re-render when 'data' changes
+  console.log('Sentiment data for chart:', {
+    positive: sentimentData.positive,
+    neutral: sentimentData.neutral,
+    negative: sentimentData.negative,
+    toxic: sentimentData.toxic
+});
 
   return (
     <div style={{ width: '80%', margin: '0 auto' }}>

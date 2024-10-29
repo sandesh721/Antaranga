@@ -61,10 +61,10 @@ function Quote({ bg }) {
                     alt={quote.heading}
                     className="image"
                   />
-                  <div>
+                  {/* <div>
                     <FavoriteBorderIcon className="icon like" />
                     <ArrowCircleDownIcon className="icon download" />
-                  </div>
+                  </div> */}
                 </div>
               ))}
             </div>

@@ -1,7 +1,8 @@
+
 .container_quote {
     animation: fadein 750ms linear forwards;
     padding: 1em 5em;
-    height: 100vh;
+    /* height: 100vh; */
     background: linear-gradient(to bottom, #fff 0%, #8be3f3 100%);
     background-size: cover;
     background-repeat: repeat;
@@ -22,15 +23,17 @@ h1{
 
 .image {
     width: 400px; /* Adjusted to fit container width */
-    height: auto; /* Maintain aspect ratio */
+    height: 300px; /* Maintain aspect ratio */
     transition: box-shadow 0.3s ease;
 }
 
 .content {
     display: flex;
-    flex-wrap: wrap; 
-    justify-content: space-around; /* Adjusted for better spacing */
-    gap: 1em; /* Added gap for better spacing */
+  flex-wrap: wrap;
+  gap: 20px; 
+  justify-content: center; 
+  padding: 20px; 
+   
 }
 
 .icon {
