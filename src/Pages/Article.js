@@ -26,8 +26,8 @@ function Article({ bg }) {
     const [articles, setArticles] = useState([]);
     const [loading, setLoading] = useState(true); 
     const [modalOpen, setModalOpen] = useState(false);
-    const [sentimentData, setSentimentData] = useState({ positive: 0, neutral: 0, negative: 0 });
-    const [open, setOpen] = React.useState(false);
+    const [sentimentData, setSentimentData] = useState({ positive: 0, neutral: 0, negative: 0, toxic: 0 });
+    const [open, setOpen] = useState(false);
 
     const fetchArticles = async () => {
         const { data, error } = await supabase
@@ -60,19 +60,21 @@ function Article({ bg }) {
                 .from('commentArticle')
                 .select('*')
                 .eq('article_id', article.id);
-
+    
             if (error) {
                 console.error('Error fetching comments:', error);
                 return;
             }
-
+    
             if (comments.length === 0) {
                 console.log('No comments to analyze.');
-                setSentimentData({ positive: 0, neutral: 0, negative: 0 });
+                setSentimentData({ positive: 0, neutral: 0, negative: 0, toxic: 0 });
                 setModalOpen(true);
                 return;
             }
-
+    
+            console.log('Comments fetched:', comments); // Log comments fetched
+    
             const response = await fetch('http://localhost:5000/analyze', {
                 method: 'POST',
                 headers: {
@@ -80,16 +82,23 @@ function Article({ bg }) {
                 },
                 body: JSON.stringify({ comments }),
             });
-
+    
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+    
             const result = await response.json();
+            console.log('Sentiment analysis result:', result); // Log the result of the sentiment analysis
             setSentimentData(result); 
             setOpen(false);
             setModalOpen(true);
-
+    
         } catch (error) {
             console.error('Error analyzing comments:', error);
         }
     };
+    
+    
 
     const handleClose = () => {
         setModalOpen(false);
@@ -104,7 +113,8 @@ function Article({ bg }) {
 
     return (
         <>
-            {loading ? ( 
+            {/* Loading Spinner */}
+            {loading ? (
                 <div className="loading_spinner"> 
                     <CircularProgress />
                 </div>
@@ -137,15 +147,14 @@ function Article({ bg }) {
                                     </CardContent>
                                     <CardActions>
                                         <Button size="small" onClick={() => readMore(article)}>Read More</Button>
-                                        <Button size="small" onClick={() => {analyze(article); showBackDrop();}}>Analyse Responses
-                                            <InsertChartIcon></InsertChartIcon>
+                                        <Button size="small" onClick={() => {analyze(article); showBackDrop();}}>Analyze Responses
+                                            <InsertChartIcon />
                                         </Button>
                                     </CardActions>
                                 </Card>
                             ))}
                         </div>
                     </div>
-                    
                     
                     <Backdrop
                         sx={(theme) => ({ color: '#fff', zIndex: theme.zIndex.drawer + 1 })}
@@ -156,26 +165,44 @@ function Article({ bg }) {
                     </Backdrop>
                 
                     <Modal open={modalOpen} onClose={handleClose}>
-                        <div className="modal-chart">
-                            <h3>Sentiment Analysis</h3>
-                            <Bar
-                                data={{
-                                    labels: ['Positive','Negative'],
-                                    datasets: [
-                                        {
-                                            label: 'Sentiment Count',
-                                            data: [sentimentData.positive, sentimentData.negative],
-                                            backgroundColor: ['#4caf50', '#f44336'],
-                                        },
-                                    ],
-                                }}
-                                width={300}  
-                                height={200} 
-                                
-                            />
-                            <Button onClick={() => {handleClose(); closeBackDrop();}}>Close</Button>
-                        </div>
-                    </Modal>
+    <div className="modal-chart">
+        <h3>Sentiment Analysis</h3>
+        {console.log('Rendering chart with data:', sentimentData)} // Log data being used for the chart
+        <Bar
+            data={{
+                labels: ['Positive', 'Neutral', 'Negative'],
+                datasets: [
+                    {
+                        label: 'Sentiment Count',
+                        data: [
+                            sentimentData.positive, 
+                            sentimentData.neutral, 
+                            sentimentData.negative, 
+                            // sentimentData.toxic
+                        ],
+                        backgroundColor: ['#4caf50', '#ffeb3b', '#f44336', '#9c27b0'],
+                    },
+                ],
+            }}
+            width={300}
+            height={200}
+            options={{
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                    },
+                    title: {
+                        display: true,
+                        text: 'Sentiment Analysis Results',
+                    },
+                },
+            }}
+        />
+        <Button variant="contained" onClick={handleClose}>Close</Button>
+    </div>
+</Modal>
+
                 </div>
             )}
         </>
