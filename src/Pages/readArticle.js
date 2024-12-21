@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import NavBar from '../components/navBar';
 import supabase from '../supabase/supabase'; // Assuming you have supabase setup
-import { Card, CardContent, TextField, Button, Avatar, Typography, Divider, CardMedia } from "@mui/material";
+import { Card, CardContent, TextField, Button, Avatar, Typography, Divider, CardMedia, Stack } from "@mui/material";
 import "../Pages/readArticle.css";
 import { pipeline } from "@huggingface/hub";
 import * as tf from "@tensorflow/tfjs";
@@ -16,8 +16,41 @@ function ReadArticle() {
 
   const [newComment, setNewComment] = useState("");
   const [allComments, setAllComments] = useState([]);
+  const [editMode, setEditMode] = useState(null); // State to track which article is being edited
+const [updatedData, setUpdatedData] = useState({ title: '', content: '' });
 
+const handleEditChange = (e) => {
+    setUpdatedData({ ...updatedData, [e.target.name]: e.target.value });
+};
   
+  const updateArticle = async (articleId, updatedData) => {
+    const { error } = await supabase
+        .from('articles')
+        .update(updatedData)
+        .eq('id', articleId);
+
+    if (error) {
+        alert('Error updating article: ' + error.message);
+    } else {
+        alert('Article updated successfully!');
+        window.location.href = '/articles'; // Redirect to the articles page
+    }
+};
+const deleteArticle = async (articleId) => {
+  const { error } = await supabase
+      .from('articles')
+      .delete()
+      .eq('id', articleId);
+
+  if (error) {
+      alert('Error deleting article: ' + error.message);
+  } else {
+      alert('Article deleted successfully!');
+      window.location.reload(); 
+      window.location.href = '/article';
+  }
+};
+
 
 
   // Fetch comments for the article
@@ -80,11 +113,50 @@ function ReadArticle() {
   
 
   return (
+    <>
+        {editMode ? (
+            <div className="edit-form">
+                <h3>Edit Article</h3>
+                <input
+                    type="text"
+                    name="title"
+                    value={updatedData.title}
+                    onChange={handleEditChange}
+                    placeholder="Edit Title"
+                />
+                <textarea
+                    name="content"
+                    value={updatedData.content}
+                    onChange={handleEditChange}
+                    placeholder="Edit Content"
+                />
+                <button
+                    onClick={() => {
+                        updateArticle(editMode.id, updatedData);
+                        setEditMode(null); // Exit edit mode
+                    }}
+                >
+                    Update
+                </button>
+                <button onClick={() => setEditMode(null)}>Cancel</button>
+            </div>
+        ) : (
     <div className='container'>
       <NavBar />
       <div className='article-content'>
         <div className='heading'>
           <h1>{article.heading}</h1>
+          <div className='buttons'>
+          <Stack direction="row" spacing={2}>
+      
+            <Button className='editButton' onClick={() => setEditMode(article.id)} variant="contained" color="success">
+              Edit
+            </Button>
+            <Button className='deleteButton' onClick={() => deleteArticle(article.id)} variant="contained" color="error">
+              Delete
+            </Button>
+          </Stack>
+          </div>
           <p>{date}</p>
         </div>
 
@@ -151,6 +223,8 @@ function ReadArticle() {
         </div>
       </div>
     </div>
+    )}
+    </>
   );
 }
 
