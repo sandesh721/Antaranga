@@ -1,17 +1,14 @@
 import React, { useRef, useState } from "react";
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation  } from 'react-router-dom';
 import ImageUploading from "react-images-uploading";
 import nullImg from "../components/images/upload.jpeg";
 import "../Pages/publishArticle.css";
 import NavBar from "../components/navBar";
 import Box from "@mui/material/Box";
-import TextField from "@mui/material/TextField";
-import Stack from "@mui/material/Stack";
-import Button from "@mui/material/Button";
 import AddIcon from "@mui/icons-material/Add";
 import supabase from "../supabase/supabase";
 import Alert from '@mui/material/Alert';
-
+import { TextField, Button, Typography, Stack } from "@mui/material";
 function PublishArticle() {
   const [images, setImages] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
