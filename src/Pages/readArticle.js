@@ -1,147 +1,155 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import NavBar from '../components/navBar';
-import supabase from '../supabase/supabase'; // Assuming you have supabase setup
-import { Card, CardContent, TextField, Button, Avatar, Typography, Divider, CardMedia, Stack } from "@mui/material";
+import supabase from '../supabase/supabase';
+import {
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Avatar,
+  Typography,
+  Divider,
+  CardMedia,
+  Stack,
+  Box,
+  Grid,
+} from "@mui/material";
 import "../Pages/readArticle.css";
-import { pipeline } from "@huggingface/hub";
-import * as tf from "@tensorflow/tfjs";
 
 function ReadArticle() {
   const location = useLocation();
   const article = location.state; // Assuming article details are passed via state
+
+  const [newComment, setNewComment] = useState("");
+  const [allComments, setAllComments] = useState([]);
+  const [editMode, setEditMode] = useState(false); // Track edit mode
+  const [updatedData, setUpdatedData] = useState({
+    heading: article.heading,
+    content: article.article,
+  });
+
   const created = article.created_at;
   const dateArray = new Date(created).toString().split(" ");
   const date = `${dateArray[1]} ${dateArray[2]}, ${dateArray[3]}`;
 
-  const [newComment, setNewComment] = useState("");
-  const [allComments, setAllComments] = useState([]);
-  const [editMode, setEditMode] = useState(null); // State to track which article is being edited
-const [updatedData, setUpdatedData] = useState({ title: '', content: '' });
-
-const handleEditChange = (e) => {
-    setUpdatedData({ ...updatedData, [e.target.name]: e.target.value });
-};
-  
-  const updateArticle = async (articleId, updatedData) => {
-    const { error } = await supabase
-        .from('articles')
-        .update(updatedData)
-        .eq('id', articleId);
-
-    if (error) {
-        alert('Error updating article: ' + error.message);
-    } else {
-        alert('Article updated successfully!');
-        window.location.href = '/articles'; // Redirect to the articles page
-    }
-};
-const deleteArticle = async (articleId) => {
-  const { error } = await supabase
-      .from('articles')
-      .delete()
-      .eq('id', articleId);
-
-  if (error) {
-      alert('Error deleting article: ' + error.message);
-  } else {
-      alert('Article deleted successfully!');
-      window.location.reload(); 
-      window.location.href = '/article';
-  }
-};
-
-
-
-  // Fetch comments for the article
   useEffect(() => {
     const fetchComments = async () => {
-      try {
-        const { data: comments, error } = await supabase
-          .from('commentArticle')
-          .select('*')
-          .eq('article_id', article.id)
-          .order('created_at', { ascending: false });  // Fetch newest comments first
-  
-        if (error) {
-          console.error('Error fetching comments:', error.message);
-        } else {
-          setAllComments(comments);
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err.message);
+      const { data: comments, error } = await supabase
+        .from('commentArticle')
+        .select('*')
+        .eq('article_id', article.id)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching comments:', error.message);
+      } else {
+        setAllComments(comments);
       }
     };
-  
+
     if (article.id) {
       fetchComments();
     }
   }, [article.id]);
-  
 
-  // Handle adding a comment
   const handleAddComment = async () => {
     if (newComment.trim()) {
-      try {
-        
+      const { error } = await supabase
+        .from('commentArticle')
+        .insert([
+          {
+            article_id: article.id,
+            username: 'User Name',
+            comment: newComment,
+            created_at: new Date(),
+          },
+        ]);
 
-       
-        
-        const { error } = await supabase
-          .from('commentArticle')
-          .insert([
-            {
-              article_id: article.id,
-              username: 'User Name',  // Replace with actual user name or session user
-              comment: newComment,
-              created_at: new Date(),
-            }
-          ]);
-  
-        if (error) {
-          console.error('Error adding comment:', error.message);
-        } else {
-          // Add new comment to the beginning of the comments list
-          setAllComments([{ comment: newComment, user_name: 'User Name', created_at: new Date() }, ...allComments]);
-          setNewComment("");
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err.message);
+      if (error) {
+        console.error('Error adding comment:', error.message);
+      } else {
+        setAllComments([{ comment: newComment, user_name: 'User Name', created_at: new Date() }, ...allComments]);
+        setNewComment("");
       }
     }
   };
-  
+
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setUpdatedData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const updateArticle = async () => {
+    const { error } = await supabase
+      .from('articles')
+      .update({
+        heading: updatedData.heading,
+        article: updatedData.content,
+      })
+      .eq('id', article.id);
+
+    if (error) {
+      alert('Error updating article: ' + error.message);
+    } else {
+      alert('Article updated successfully!');
+      setEditMode(false);
+    }
+  };
+
+  const deleteArticle = async () => {
+    const { error } = await supabase
+      .from('articles')
+      .delete()
+      .eq('id', article.id);
+
+    if (error) {
+      alert('Error deleting article: ' + error.message);
+    } else {
+      alert('Article deleted successfully!');
+      window.location.href = '/articles';
+    }
+  };
 
   return (
     <>
+      {/* <NavBar /> */}
+      <Box className="container">
         {editMode ? (
-            <div className="edit-form">
-                <h3>Edit Article</h3>
-                <input
-                    type="text"
-                    name="title"
-                    value={updatedData.title}
-                    onChange={handleEditChange}
-                    placeholder="Edit Title"
-                />
-                <textarea
-                    name="content"
-                    value={updatedData.content}
-                    onChange={handleEditChange}
-                    placeholder="Edit Content"
-                />
-                <button
-                    onClick={() => {
-                        updateArticle(editMode.id, updatedData);
-                        setEditMode(null); // Exit edit mode
-                    }}
-                >
-                    Update
-                </button>
-                <button onClick={() => setEditMode(null)}>Cancel</button>
-            </div>
+          <Card className="edit-form">
+            <CardContent>
+              <Typography variant="h5">Edit Article</Typography>
+              <TextField
+                fullWidth
+                margin="normal"
+                label="Edit Title"
+                name="heading"
+                value={updatedData.heading}
+                onChange={handleEditChange}
+              />
+              <TextField
+                fullWidth
+                margin="normal"
+                multiline
+                rows={5}
+                label="Edit Content"
+                name="content"
+                value={updatedData.content}
+                onChange={handleEditChange}
+              />
+              <Stack direction="row" spacing={2} marginTop={2}>
+                <Button variant="contained" color="primary" onClick={updateArticle}>
+                  Save
+                </Button>
+                <Button variant="outlined" onClick={() => setEditMode(false)}>
+                  Cancel
+                </Button>
+              </Stack>
+            </CardContent>
+          </Card>
         ) : (
-    <div className='container'>
+          <>
+            <div className='container'>
       <NavBar />
       <div className='article-content'>
         <div className='heading'>
@@ -223,7 +231,10 @@ const deleteArticle = async (articleId) => {
         </div>
       </div>
     </div>
+          </>
     )}
+        
+      </Box>
     </>
   );
 }

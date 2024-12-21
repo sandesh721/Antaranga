@@ -9,6 +9,8 @@ import Stack from "@mui/material/Stack";
 import { useNavigate } from "react-router-dom";
 import supabase from "../supabase/supabase";
 import CircularProgress from "@mui/material/CircularProgress";
+import IconButton from '@mui/material/IconButton';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function Quote({ bg }) {
   const navigate = useNavigate();
@@ -53,22 +55,26 @@ function Quote({ bg }) {
             </Button>
           </Stack>
           <div className="imageContainer">
-            <div className="content">
-              {quotes.map((quote) => (
-                <div key={quote.id} className="singleImg">
-                  <img
-                    src={quote.quote_url}
-                    alt={quote.heading}
-                    className="image"
-                  />
-                  {/* <div>
-                    <FavoriteBorderIcon className="icon like" />
-                    <ArrowCircleDownIcon className="icon download" />
-                  </div> */}
-                </div>
-              ))}
-            </div>
+          <div className="content">
+            {quotes.map((quote) => (
+              <div key={quote.id} className="singleImg">
+                <IconButton
+                  aria-label="delete"
+                  size="large"
+                  className="deleteButton"
+                >
+                  <DeleteIcon />
+                </IconButton>
+                <img
+                  src={quote.quote_url}
+                  alt={quote.heading}
+                  className="image"
+                />
+              </div>
+            ))}
           </div>
+        </div>
+
         </div>
       )}
     </>
