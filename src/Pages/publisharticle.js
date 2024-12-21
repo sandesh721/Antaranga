@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { useNavigate, useLocation  } from 'react-router-dom';
+import React, { useRef, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import ImageUploading from "react-images-uploading";
 import nullImg from "../components/images/upload.jpeg";
 import "../Pages/publishArticle.css";
@@ -7,17 +7,78 @@ import NavBar from "../components/navBar";
 import Box from "@mui/material/Box";
 import AddIcon from "@mui/icons-material/Add";
 import supabase from "../supabase/supabase";
-import Alert from '@mui/material/Alert';
+import Alert from "@mui/material/Alert";
 import { TextField, Button, Typography, Stack } from "@mui/material";
-function PublishArticle() {
+
+function PublishArticle({ articleToEdit, mode }) {
   const [images, setImages] = useState([]);
   const [selectedFile, setSelectedFile] = useState(null);
-  const [heading, setHeading] = useState('');
-  const [article, setArticle] = useState('');
+  const [heading, setHeading] = useState("");
+  const [article, setArticle] = useState("");
   const [alert, setAlert] = useState(null);
-  const maxNumber = 1;
+  const [imageUrl, setImageUrl] = useState("");
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
+  const maxNumber = 1;
+
+  useEffect(() => {
+    if (mode === "edit" && articleToEdit) {
+      setHeading(articleToEdit.heading);
+      setArticle(articleToEdit.article);
+      setImageUrl(articleToEdit.img_url);
+      setImages([{ data_url: articleToEdit.img_url }]);
+    }
+  }, [articleToEdit, mode]);
+
+  const handleSubmit = async () => {
+    if (!heading || !article || (mode !== "edit" && !selectedFile)) {
+      setAlert({ severity: "error", message: "All fields are required!" });
+      setTimeout(() => setAlert(null), 2000);
+      return;
+    }
+
+    try {
+      let img_url = imageUrl;
+
+      if (selectedFile) {
+        const fileExt = selectedFile.name.split(".").pop();
+        const fileName = `${Math.random()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase
+          .storage
+          .from("articleImages")
+          .upload(`public/${fileName}`, selectedFile, {
+            cacheControl: "3600",
+            upsert: false,
+          });
+
+        if (uploadError) throw uploadError;
+
+        img_url = `https://uzbcnkeihbforjogyyfn.supabase.co/storage/v1/object/public/articleImages/${uploadData.path}`;
+      }
+
+      const { error } = mode === "edit"
+        ? await supabase
+            .from("articles")
+            .update({ heading, article, img_url })
+            .eq("id", articleToEdit.id)
+        : await supabase
+            .from("articles")
+            .insert([{ heading, article, img_url }]);
+
+      if (error) throw error;
+
+      setAlert({ severity: "success", message: mode === "edit" ? "Article updated successfully!" : "Article published successfully!" });
+      setTimeout(() => {
+        setAlert(null);
+        navigate("/articles");
+      }, 2000);
+    } catch (error) {
+      console.error("Error:", error.message);
+      setAlert({ severity: "error", message: `Error: ${error.message}` });
+      setTimeout(() => setAlert(null), 2000);
+    }
+  };
 
   const onChange = (imageList) => {
     setImages(imageList);
@@ -39,60 +100,14 @@ function PublishArticle() {
     }
   };
 
-  const publishArticleImg = async () => {
-    if (!selectedFile || !heading || !article) {
-      console.error("Please fill all the fields");
-      return;
-    }
-  
-    const fileExt = selectedFile.name.split('.').pop();
-    const fileName = `${Math.random()}.${fileExt}`;
-  
-    try {
-      const { data: uploadData, error: uploadError } = await supabase
-        .storage
-        .from('articleImages')
-        .upload(`public/${fileName}`, selectedFile, {
-          cacheControl: '3600',
-          upsert: false,
-        });
-  
-      if (uploadError) {
-        console.error("Error uploading image:", uploadError.message);
-        return;
-      }
-  
-      const manualPublicURL = `https://uzbcnkeihbforjogyyfn.supabase.co/storage/v1/object/public/articleImages/${uploadData.path}`;
-
-      const { error: insertError } = await supabase
-        .from('articles')
-        .insert([{ heading, article, img_url: manualPublicURL }]);
-  
-      if (insertError) {
-        console.error("Error inserting data into table:", insertError.message);
-        setAlert({severity: 'error', message: 'Error inserting article!'});
-      } else {
-        setAlert({severity: 'success', message: 'Article published successfully!'});
-        setTimeout(() => {
-          setAlert(null);
-          navigate('/article'); 
-        }, 2000);
-      }
-    } catch (error) {
-      console.error("Unexpected error:", error.message);
-      setAlert({severity: 'error', message: 'An unexpected error occurred!'});
-      setTimeout(() => {
-        setAlert(null);
-      }, 2000);
-    }
-  };
-  
   return (
     <div className="publish_Article">
       <div className="navbar">
         <NavBar />
       </div>
-      <h3 className="heading">Publish your Article</h3>
+      <Typography variant="h4" gutterBottom className="heading">
+        {mode === "edit" ? "Edit Article" : "Publish Article"}
+      </Typography>
       <div className="publish_Article_container">
         <div className="upload">
           <ImageUploading
@@ -101,7 +116,7 @@ function PublishArticle() {
             onChange={onChange}
             maxNumber={maxNumber}
             dataURLKey="data_url"
-            acceptType={["jpg"]}
+            acceptType={["jpg", "jpeg", "png"]}
           >
             {() => (
               <div className="upload__image-wrapper">
@@ -149,35 +164,33 @@ function PublishArticle() {
           noValidate
           autoComplete="off"
         >
-          <div>
-            <TextField
-              id="outlined-multiline-flexible"
-              label="Article"
-              multiline
-              maxRows={10}
-              value={article}
-              onChange={(e) => setArticle(e.target.value)}
-              InputProps={{
-                sx: {
-                  height: "200px",
-                  alignItems: "flex-start",
-                },
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  height: "300px",
-                },
-              }}
-            />
-          </div>
+          <TextField
+            id="outlined-multiline-flexible"
+            label="Article"
+            multiline
+            maxRows={10}
+            value={article}
+            onChange={(e) => setArticle(e.target.value)}
+            InputProps={{
+              sx: {
+                height: "200px",
+                alignItems: "flex-start",
+              },
+            }}
+            sx={{
+              "& .MuiOutlinedInput-root": {
+                height: "300px",
+              },
+            }}
+          />
         </Box>
         <Stack direction="row" spacing={2} className="publichButton">
           <Button
             variant="outlined"
             startIcon={<AddIcon />}
-            onClick={publishArticleImg}
+            onClick={handleSubmit}
           >
-            Publish
+            {mode === "edit" ? "Update" : "Publish"}
           </Button>
         </Stack>
 
