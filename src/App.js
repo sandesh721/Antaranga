@@ -16,7 +16,7 @@ function App() {
     <Router>
         <div>
           <Routes>
-            <Route path="/" element={<Home bg="white"/>} />
+            <Route path="/Home" element={<Home bg="white"/>} />
             <Route path="/article" element={<Article bg="yellow" />} />
             <Route path="/quote" element={<Quote bg="bisque" />} />
             <Route path="/publishArticle" element={<PublishArticle />} />
@@ -26,7 +26,8 @@ function App() {
             <Route path="contact" />
             <Route path="authors" />
             <Route path="portfolio" />
-            <Route path="/login" element={<LoginPage />} />
+            
+            <Route path="/" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgotpassword" element={<ForgotPasswordPage />} />
           </Routes>

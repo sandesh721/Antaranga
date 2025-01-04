@@ -1,47 +1,39 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { TextField, Button, Typography, Container, Box, Alert } from '@mui/material';
-import supabase from './supabase/supabase'; // Assuming Supabase is initialized
+import React, { useState } from "react";
+import { TextField, Button, Typography, Container, Box, Alert } from "@mui/material";
+import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { getFirestore, doc, setDoc } from "firebase/firestore";
+import app from "./supabase/firebase"; // Firebase client initialization
+import { useNavigate, Link } from 'react-router-dom';
+const auth = getAuth(app);
+const db = getFirestore(app);
 
 function RegisterPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-
   const handleRegister = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords don't match");
-      return;
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      // Assign "user" role in Firestore
+      await setDoc(doc(db, "users", user.uid), {
+        role: "user",
+        email: user.email,
+      });
+
+      setSuccess("User registered successfully with 'user' role!");
+      navigate('/');
+    } catch (err) {
+      setError(err.message);
     }
-
-    // Sign up the user
-    const { data, error: signupError } = await supabase.auth.signUp({ email, password });
-
-    if (signupError) {
-      setError('Registration failed: ' + signupError.message);
-      return;
-    }
-
-    // Insert the user into the users table
-    const { user } = data;
-    const { error: insertError } = await supabase
-      .from('users')
-      .insert([{ id: user.id, email, role: 'user' }]); // Assuming a default role of 'user'
-
-    if (insertError) {
-      setError('Error saving user details: ' + insertError.message);
-      return;
-    }
-
-    setSuccess('Registration successful! Please check your email to confirm your account.');
-    navigate('/login'); // Redirect to login page after successful registration
   };
 
   return (
@@ -57,10 +49,10 @@ function RegisterPage() {
           Register
         </Typography>
 
-        {error && <Alert severity="error" sx={{ width: '100%', marginBottom: '20px' }}>{error}</Alert>}
-        {success && <Alert severity="success" sx={{ width: '100%', marginBottom: '20px' }}>{success}</Alert>}
+        {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
 
-        <form onSubmit={handleRegister} style={{ width: '100%' }}>
+        <form onSubmit={handleRegister} style={{ width: "100%" }}>
           <TextField
             label="Email"
             variant="outlined"
@@ -81,23 +73,7 @@ function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
-          <TextField
-            label="Confirm Password"
-            variant="outlined"
-            fullWidth
-            margin="normal"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-          />
-          <Button
-            type="submit"
-            variant="contained"
-            color="primary"
-            fullWidth
-            sx={{ marginTop: '20px' }}
-          >
+          <Button type="submit" variant="contained" color="primary" fullWidth>
             Register
           </Button>
         </form>

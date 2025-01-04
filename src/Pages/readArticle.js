@@ -16,7 +16,8 @@ import {
   Grid,
 } from "@mui/material";
 import "../Pages/readArticle.css";
-
+import { getAuth } from "firebase/auth"; 
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 function ReadArticle() {
   const location = useLocation();
   const article = location.state; // Assuming article details are passed via state
@@ -24,11 +25,30 @@ function ReadArticle() {
   const [newComment, setNewComment] = useState("");
   const [allComments, setAllComments] = useState([]);
   const [editMode, setEditMode] = useState(false); // Track edit mode
+  const [role, setRole] = useState("");
   const [updatedData, setUpdatedData] = useState({
     heading: article.heading,
     content: article.article,
   });
 
+  const fetchUserRole = async () => {
+          try {
+              const auth = getAuth();
+              const user = auth.currentUser;
+              if (user) {
+                  const db = getFirestore();
+                  const userRef = doc(db, "users", user.uid);
+                  const userDoc = await getDoc(userRef);
+  
+                  if (userDoc.exists()) {
+                      const userData = userDoc.data();
+                      setRole(userData.role); 
+                  }
+              }
+          } catch (error) {
+              console.error("Error fetching user role:", error);
+          }
+      };
   const created = article.created_at;
   const dateArray = new Date(created).toString().split(" ");
   const date = `${dateArray[1]} ${dateArray[2]}, ${dateArray[3]}`;
@@ -50,6 +70,7 @@ function ReadArticle() {
 
     if (article.id) {
       fetchComments();
+      fetchUserRole(); 
     }
   }, [article.id]);
 
@@ -107,7 +128,7 @@ function ReadArticle() {
       alert('Error deleting article: ' + error.message);
     } else {
       alert('Article deleted successfully!');
-      window.location.href = '/articles';
+      window.location.href = '/article';
     }
   };
 
@@ -154,9 +175,10 @@ function ReadArticle() {
       <div className='article-content'>
         <div className='heading'>
           <h1>{article.heading}</h1>
+          {role === "admin" && (
           <div className='buttons'>
           <Stack direction="row" spacing={2}>
-      
+          
             <Button className='editButton' onClick={() => setEditMode(article.id)} variant="contained" color="success">
               Edit
             </Button>
@@ -165,6 +187,7 @@ function ReadArticle() {
             </Button>
           </Stack>
           </div>
+          )}
           <p>{date}</p>
         </div>
 

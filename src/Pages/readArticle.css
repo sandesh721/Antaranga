@@ -38,16 +38,18 @@
 }
 
 .date{
-    margin-left: 150px;
+    margin-left: 170px;
 }
 .editButton{
     background-color: #4CAF50;
 }
 .deleteButton{
     background-color: #f44336;
-    /* color: #f44336; */
+    
+    
 }
 .buttons{
     display:flex;
     float: right;
+    justify-content: space-between;
 }

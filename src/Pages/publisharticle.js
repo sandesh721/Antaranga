@@ -71,7 +71,7 @@ function PublishArticle({ articleToEdit, mode }) {
       setAlert({ severity: "success", message: mode === "edit" ? "Article updated successfully!" : "Article published successfully!" });
       setTimeout(() => {
         setAlert(null);
-        navigate("/articles");
+        navigate("/article");
       }, 2000);
     } catch (error) {
       console.error("Error:", error.message);

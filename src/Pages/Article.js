@@ -17,7 +17,8 @@ import Modal from '@mui/material/Modal';
 import { Bar } from 'react-chartjs-2';
 import Backdrop from '@mui/material/Backdrop';
 import { Chart, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-
+import { getAuth } from "firebase/auth"; 
+import { getFirestore, doc, getDoc } from "firebase/firestore";
 // Register Chart.js components
 Chart.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -28,7 +29,25 @@ function Article({ bg }) {
     const [modalOpen, setModalOpen] = useState(false);
     const [sentimentData, setSentimentData] = useState({ positive: 0, neutral: 0, negative: 0, toxic: 0 });
     const [open, setOpen] = useState(false);
+    const [role, setRole] = useState("");
+    const fetchUserRole = async () => {
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+            if (user) {
+                const db = getFirestore();
+                const userRef = doc(db, "users", user.uid);
+                const userDoc = await getDoc(userRef);
 
+                if (userDoc.exists()) {
+                    const userData = userDoc.data();
+                    setRole(userData.role); 
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching user role:", error);
+        }
+    };
     const fetchArticles = async () => {
         const { data, error } = await supabase
             .from('articles')
@@ -44,6 +63,7 @@ function Article({ bg }) {
 
     useEffect(() => {
         fetchArticles();
+        fetchUserRole(); 
     }, []);
 
     const publishArticle = () => {
@@ -123,9 +143,11 @@ function Article({ bg }) {
                     <NavBar />
                     <h2>My Articles</h2>
                     <Stack direction="row" spacing={2}>
-                        <Button variant="outlined" startIcon={<AddIcon />} onClick={publishArticle}>
-                            Publish
-                        </Button>
+                        {role === "admin" && ( // Only show button if role is admin
+                            <Button variant="outlined" startIcon={<AddIcon />} onClick={publishArticle}>
+                                Publish
+                            </Button>
+                        )}
                     </Stack>
                     <div className="container_article_content">
                         <div className="content">
