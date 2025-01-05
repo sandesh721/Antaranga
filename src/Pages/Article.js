@@ -189,7 +189,7 @@ function Article({ bg }) {
                     <Modal open={modalOpen} onClose={handleClose}>
     <div className="modal-chart">
         <h3>Sentiment Analysis</h3>
-        {console.log('Rendering chart with data:', sentimentData)} // Log data being used for the chart
+        {console.log('Rendering chart with data:', sentimentData)} 
         <Bar
             data={{
                 labels: ['Positive', 'Neutral', 'Negative'],

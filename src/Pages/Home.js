@@ -46,7 +46,7 @@ const [open, setOpen] = useState(false);
                 <NavBar />
             </div>
             
-            <span className="subtitle">Subtitle</span>
+            <span className="subtitle">Collection of my thoughts</span>
             <div className="about">
                 <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Voluptatum consectetur nam est sapiente debitis voluptatibus eos suscipit sequi minima sit, obcaecati eaque cumque a quaerat, quas ex quisquam optio quo assumenda quia numquam ullam praesentium. Distinctio non vitae perferendis fuga, earum eos in! Excepturi molestias corporis, quibusdam aliquam ad quam.</p>
             </div>

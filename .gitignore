@@ -24,3 +24,5 @@ yarn-debug.log*
 yarn-error.log*
 
 Backend/venv/
+
+src/supabase/antaranga-fd.json

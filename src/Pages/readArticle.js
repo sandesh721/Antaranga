@@ -76,25 +76,45 @@ function ReadArticle() {
 
   const handleAddComment = async () => {
     if (newComment.trim()) {
-      const { error } = await supabase
-        .from('commentArticle')
-        .insert([
-          {
-            article_id: article.id,
-            username: 'User Name',
-            comment: newComment,
-            created_at: new Date(),
-          },
-        ]);
-
-      if (error) {
-        console.error('Error adding comment:', error.message);
-      } else {
-        setAllComments([{ comment: newComment, user_name: 'User Name', created_at: new Date() }, ...allComments]);
-        setNewComment("");
+      try {
+        const auth = getAuth();
+        const user = auth.currentUser;
+  
+        if (user) {
+          // Fetch user details from Firestore
+          const db = getFirestore();
+          const userRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userRef);
+  
+          if (userDoc.exists()) {
+            const { name } = userDoc.data(); 
+  
+            // Insert the new comment into Supabase
+            const { error } = await supabase
+              .from('commentArticle')
+              .insert([
+                {
+                  article_id: article.id,
+                  username:name, 
+                  comment: newComment,
+                  created_at: new Date(),
+                },
+              ]);
+  
+            if (error) {
+              console.error('Error adding comment:', error.message);
+            } else {
+              setAllComments([{ comment: newComment, user_name: name, created_at: new Date() }, ...allComments]);
+              setNewComment("");
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user details or adding comment:", error);
       }
     }
   };
+  
 
   const handleEditChange = (e) => {
     const { name, value } = e.target;
