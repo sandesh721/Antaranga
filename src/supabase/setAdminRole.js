@@ -15,4 +15,4 @@ const setAdminRole = async (email) => {
 };
 
 // Call this function with the admin email
-setAdminRole("sandeshnagaraj8@gmail.com");
+setAdminRole("");
